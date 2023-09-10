@@ -8,10 +8,11 @@ import "../helpers/BoringOwnable.sol";
 import "./IBeneficiaryCertificate.sol";
 import "./LosslessStrategyManager.sol";
 import "./QuadraticFundingHelper.sol";
+import "../libraries/TokenHelper.sol";
 import "./IBeneficiaryDonationManager.sol";
 
 /// @notice Main Managing Contract to facilitate direct donations to supported NPOs & also handle claiming of yields from Lossless strategies alongside with distrubutions of yields based on quadratric funding determined by distribution of main donation.
-contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStrategyManager, BoringOwnable, QuadraticFundingHelper {
+contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStrategyManager, BoringOwnable, TokenHelper, QuadraticFundingHelper {
     using SafeERC20 for IERC20;
 
     address public constant USDC = 0xde637d4C445cA2aae8F782FFAc8d2971b93A4998; // Fake Address
@@ -42,11 +43,9 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
                         PUBLIC/EXTERNAL FUNCTIONS
 =========================================================================
 */
-
-    function setAllowanceForDonation(uint256 amount) external {
-        require(amount > 0, "Invalid amount");
-        IERC20(USDC).safeApprove(address(this), 0);
-        IERC20(USDC).safeApprove(address(this), amount);
+    // @notice Allows anyone who wanted to donate funds, but are not willing to decide which specific beneficiary to donate to, to get active donors to decide on distribution via quadratic funding mechanism.
+    function depositForEpochDistribution(uint256 amount) external {
+        _donateForEpochDistribution(msg.sender, amount);
     }
 
      /// @notice Allows anyone to donate to beneficiary of choice based on `beneficiaryIndex` with a specified amount of supported token.
@@ -63,9 +62,13 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
     function clrMatching(uint256 epochIndex) external override returns(address[] memory beneficiaries, uint256[] memory basisPoints){
         (beneficiaries, basisPoints) = _getEpochDonationDistribution(epochIndex);
 
+        // 1. Execute for all lossless strategies
         for(uint256 i = 0; i < _losslessYieldStrategies.length; i++) {
             ILosslessStrategy(_losslessYieldStrategies[i]).claimYieldAndDistributeByEpoch(epochIndex, beneficiaries, basisPoints);
         }
+
+        // 2. Execute for Main pool deposits
+        _distributeMainDepositsByEpoch(epochIndex, beneficiaries, basisPoints);
     }  
 
     /// @dev See {LosslessStrategyManager-addStrategy}.
@@ -137,6 +140,29 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
 
         emit Donation(epochIndex, donor, beneficiaryIndex, amount);
     }
+
+    /// @notice For direct donations but to be distrubuted via quadratic funding mechanism based on active donation distribution to supported NPOs.
+    function _donateForEpochDistribution(address donor, uint256 amount) internal {
+        require(amount > 0, "Invalid amount");
+
+        uint256 epochIndex =  _calcEpochIndex(block.timestamp);
+        IERC20(USDC).safeTransferFrom(donor, address(this), amount);
+
+        emit DepositForEpochDistributedDonation(epochIndex, donor, amount);
+    }
+
+    function _distributeMainDepositsByEpoch(uint256 epochIndex, address[] memory beneficiaries, uint256[] memory basisPoints) internal {
+        uint256 epoch = _calcEpochIndex(block.timestamp);
+        require(epochIndex > epoch, "Epoch has not ended");
+
+        uint256 totalDeposited = _selfBalance(USDC);
+
+        for(uint256 i = 0; i < beneficiaries.length; i++) {
+            uint256 amount = (totalDeposited * basisPoints[i]) / MAX_BPS_DENOMINATOR;
+            IERC20(USDC).safeTransfer(beneficiaries[i], amount);
+        }
+    }
+
     /// @notice Calculates the resp ective basis points for each whitelisted benefiaciary based on the distribution of main donations received via the quadratic funding formula
     function _getEpochDonationDistribution(uint256 epochIndex) internal view returns(address[] memory beneficiaries, uint256[] memory basisPoints) {
         uint256 totalBeneficiaries = IBeneficiaryCerfiticate(BENEFICIARY_CERTIFICATE).totalSupply();

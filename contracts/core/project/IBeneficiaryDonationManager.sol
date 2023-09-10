@@ -5,6 +5,8 @@ interface IBeneficiaryDonationManager {
 
     event Donation(uint256 indexed epoch, address indexed donor, uint256 indexed beneficiary, uint256 amount); // User Total amount donated can be tracked via indexing this event
 
+    event DepositForEpochDistributedDonation(uint256 indexed epoch, address indexed donor, uint256 amount);
+
     function donateBeneficiary(uint256 beneficiaryIndex, uint256 amount) external;
 
      function donateBeneficiary(address donor, uint256 beneficiaryIndex, uint256 amount) external;

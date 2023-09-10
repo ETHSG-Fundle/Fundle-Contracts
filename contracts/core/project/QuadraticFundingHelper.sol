@@ -18,6 +18,6 @@ abstract contract QuadraticFundingHelper {
         }
     }
 
-    /// Execute donation fund matching via quadratic formula to distribute yields accumulated from supported lossless strategies to whitelisted beneficiaries.
+    /// Execute donation fund matching for BOTH lossless strategies & main pooled deposits in `BeneficiaryDonationManager` via quadratic formula to distribute yields accumulated from supported lossless strategies to whitelisted beneficiaries.
     function clrMatching(uint256 epochIndex) external virtual returns(address[] memory beneficiaries, uint256[] memory basisPoints); 
 }
