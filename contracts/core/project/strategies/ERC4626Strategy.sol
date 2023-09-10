@@ -10,6 +10,8 @@ import "../ILosslessStrategy.sol";
 import "../../helpers/BoringOwnable.sol";
 import "../../libraries/math/Math.sol";
 
+// sDAI - 0xD8134205b0328F5676aaeFb3B2a0DC15f4029d8C (GOERLI)
+// 
 contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
     using SafeERC20 for IERC20;
     using Math for uint256;
@@ -29,11 +31,11 @@ contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
         _;
     }
 
-    constructor(string memory _name, string memory _symbol, address _erc4626, address _manager) ERC20(_name, _symbol) {
-        BENEFICIARY_DONATION_MANAGER = _manager;
-        UNDERLYING_TOKEN = IERC4626(_erc4626).asset();
-        YIELD_TOKEN = _erc4626;
-        IERC20(UNDERLYING_TOKEN).safeApprove(_erc4626, 0);
+    constructor(string memory name_, string memory symbol_, address erc4626_, address manager_) ERC20(name_, symbol_) {
+        BENEFICIARY_DONATION_MANAGER = manager_;
+        UNDERLYING_TOKEN = IERC4626(erc4626_).asset();
+        YIELD_TOKEN = erc4626_;
+        IERC20(UNDERLYING_TOKEN).safeApprove(erc4626_, 0);
         IERC20(UNDERLYING_TOKEN).safeApprove(address(this), type(uint256).max);
     }
 
@@ -95,7 +97,7 @@ contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
 
 
         function _accrueYieldByEpoch(uint256 epoch) internal returns (uint256 yieldInUnderlyingAsset) {
-        // require(_epochAccruedYield[epoch] == 0, "Yield for epoch has been claimed");
+ 
         if (_epochAccruedYield[epoch] != 0) {
             return 0;
         }
@@ -109,7 +111,7 @@ contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
         yieldInUnderlyingAsset = totalUnderlyingAmount - totalDeposited;
         _epochAccruedYield[epoch] = yieldInUnderlyingAsset;
 
-        emit EpochYieldClaim(epoch, UNDERLYING_TOKEN, yieldInUnderlyingAsset); 
+        emit EpochYieldClaim(epoch, UNDERLYING_TOKEN, yieldInUnderlyingAsset);
     }
 
     function _getEpochByTimestamp(uint256 timestamp) internal view returns (uint256 epoch) {

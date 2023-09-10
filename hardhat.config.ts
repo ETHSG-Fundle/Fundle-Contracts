@@ -93,6 +93,16 @@ const config: HardhatUserConfig = {
           gasPrice: 30 * 1000000000,
           timeout: 200000,
         },
+        "linea-goerli": {
+          url: 'https://goerli.base.org',
+          accounts: [`${process.env.PRIVATE_KEY_727 || dummyPrivateKey}`],
+          timeout: 200000,
+        },
+        "mantle-testnet": {
+          url: 'https://rpc.testnet.mantle.xyz',
+          accounts: [`${process.env.PRIVATE_KEY_727 || dummyPrivateKey}`],
+          timeout: 200000,
+        },
         bsc: {
           url: `https://bsc-dataseed.binance.org/`,
           accounts: [`${process.env.PRIVATE_KEY_BSC || dummyPrivateKey}`],
@@ -142,6 +152,7 @@ const config: HardhatUserConfig = {
           rinkeby: process.env.ETHERSCAN_API_KEY || "",
           goerli: process.env.ETHERSCAN_API_KEY || "",
           "base-goerli": "PLACEHOLDER_STRING",
+          "mantle-testnet": "PLACEHOLDER_STRING",
           sepolia: process.env.ETHERSCAN_API_KEY || "",
           bsc: process.env.BSCSCAN_API_KEY || "",
           bscTestnet: process.env.BSCSCAN_API_KEY || "",
