@@ -94,6 +94,11 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
         _losslessYieldStrategies.pop();
     }
 
+
+    function registerBeneficiary(address beneficiary, uint256 index) external onlyOwner {
+        _beneficiaryAccount[index] = beneficiary;
+    }
+
  /*
 =========================================================================
                 PUBLIC/EXTERNAL VIEW FUNCTIONS

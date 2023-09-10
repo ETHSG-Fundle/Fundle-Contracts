@@ -99,19 +99,19 @@ contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
         function _accrueYieldByEpoch(uint256 epoch) internal returns (uint256 yieldInUnderlyingAsset) {
  
         if (_epochAccruedYield[epoch] != 0) {
-            return 0;
-        }
-        
-        IERC4626 yieldToken = IERC4626(YIELD_TOKEN);
-        uint256 allShares = yieldToken.balanceOf(address(this));
-        uint256 totalUnderlyingAmount = yieldToken.redeem(allShares, address(this), address(this));
+            yieldInUnderlyingAsset = 0;
+        } else {
+            IERC4626 yieldToken = IERC4626(YIELD_TOKEN);
+            uint256 allShares = yieldToken.balanceOf(address(this));
+            uint256 totalUnderlyingAmount = yieldToken.redeem(allShares, address(this), address(this));
 
-        uint256 totalDeposited = totalSupply();
-        yieldToken.deposit(totalDeposited, address(this));
-        yieldInUnderlyingAsset = totalUnderlyingAmount - totalDeposited;
-        _epochAccruedYield[epoch] = yieldInUnderlyingAsset;
+            uint256 totalDeposited = totalSupply();
+            yieldToken.deposit(totalDeposited, address(this));
+            yieldInUnderlyingAsset = totalUnderlyingAmount - totalDeposited;
+            _epochAccruedYield[epoch] = yieldInUnderlyingAsset;
 
-        emit EpochYieldClaim(epoch, UNDERLYING_TOKEN, yieldInUnderlyingAsset);
+            emit EpochYieldClaim(epoch, UNDERLYING_TOKEN, yieldInUnderlyingAsset);
+        } 
     }
 
     function _getEpochByTimestamp(uint256 timestamp) internal view returns (uint256 epoch) {
