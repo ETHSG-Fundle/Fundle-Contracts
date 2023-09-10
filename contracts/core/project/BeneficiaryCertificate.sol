@@ -11,7 +11,7 @@ contract BeneficiaryCertificate is ERC721Enumerable, BoringOwnable {
 
     Counters.Counter private _tokenIdCounter;
 
-    constructor() ERC721("Beneficiary Certificate Token", "BCT") {}
+    constructor() ERC721("Fundle Beneficiary Certificate Token", "FBCT") {}
 
     function awardBeneficiaryCertificate(address to) external onlyOwner returns (uint256) {
         require(balanceOf(to) == 0, "Recipient has already an existing certification.");
@@ -22,9 +22,7 @@ contract BeneficiaryCertificate is ERC721Enumerable, BoringOwnable {
         return tokenId;
     }
 
-    // Decide: who burns it, why and how?
     function removeCertification(uint256 tokenId) external onlyOwner {
-        // require(ownerOf(tokenId) == msg.sender, "Only the owner of the token can burn it.");
         _burn(tokenId);
     }
 

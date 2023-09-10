@@ -7,6 +7,10 @@ interface IBeneficiaryDonationManager {
 
     event DepositForEpochDistributedDonation(uint256 indexed epoch, address indexed donor, uint256 amount);
 
+    function depositForEpochDistribution(uint256 amount) external;
+    
+    function depositForEpochDistribution(address donor, uint256 amount) external;
+
     function donateBeneficiary(uint256 beneficiaryIndex, uint256 amount) external;
 
      function donateBeneficiary(address donor, uint256 beneficiaryIndex, uint256 amount) external;

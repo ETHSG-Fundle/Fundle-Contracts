@@ -27,7 +27,8 @@ contract GmpDonationRelayer is AxelarExecutable {
         supportedToken = IERC20Metadata(_token);
     }
 
-    function donateBeneficiary(string memory destinationChain, string memory destinationAddress, uint256 beneficiaryIndex, uint256 amount) external payable  {
+    // If `donationType` == 2, `beneficiaryIndex` can be set to 0 as a placeholder.
+    function executeMainDonation(string memory destinationChain, string memory destinationAddress, uint256 beneficiaryIndex, uint256 amount, uint256 donationType) external payable  {
         require(msg.value > 0, 'Gas payment is required');
 
         supportedToken.transferFrom(msg.sender, address(this), amount);
@@ -35,7 +36,7 @@ contract GmpDonationRelayer is AxelarExecutable {
 
         string memory symbol = supportedToken.symbol();
         uint256 srcChainId = block.chainid;
-        bytes memory payload = abi.encode(msg.sender, srcChainId, beneficiaryIndex);
+        bytes memory payload = abi.encode(msg.sender, srcChainId, donationType, beneficiaryIndex); // DonationType: 1 or 2
 
         // Need to approve spending for ERC20 first? KIV
         gasService.payNativeGasForContractCallWithToken{value: msg.value} (

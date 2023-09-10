@@ -35,15 +35,18 @@ contract CrossChainDonationDistributor is AxelarExecutable, TokenHelper {
     }
 
     function _executeWithToken(string calldata, string calldata,bytes calldata payload,string calldata tokenSymbol,uint256 amount) internal override {
-        (address sender, uint256 srcChainId, uint256 beneficiaryIndex) = abi.decode(payload, (address, uint256, uint256));
+        (address sender, uint256 srcChainId, uint256 donationType, uint256 beneficiaryIndex) = abi.decode(payload, (address, uint256, uint256, uint256));
         lastBeneficiaryIndex = beneficiaryIndex;
        
         // get ERC-20 address from gateway
         address tokenAddress = gateway.tokenAddresses(tokenSymbol);
-         // @To-do: Donate to beneficiary
-         IMockEndpoint(DONANTION_MANAGER).mockTransfer(sender, beneficiaryIndex, amount); // Assumes that the MockEndpoint contract is transferring the token of the `tokenAddress`
+
         // Already max approve spending for this contract to RECEIVER via constructor for supported token.
-        IBeneficiaryDonationManager(DONANTION_MANAGER).donateBeneficiary(sender, beneficiaryIndex, amount);
+        if(donationType == 1) {
+            IBeneficiaryDonationManager(DONANTION_MANAGER).donateBeneficiary(sender, beneficiaryIndex, amount);
+        } else if (donationType == 2) {
+            IBeneficiaryDonationManager(DONANTION_MANAGER).depositForEpochDistribution(sender, amount);
+        }
 
          emit ExecuteCrossChainDonation(sender, srcChainId, beneficiaryIndex, tokenAddress, amount);
     }

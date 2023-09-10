@@ -15,8 +15,8 @@ import "./IBeneficiaryDonationManager.sol";
 contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStrategyManager, BoringOwnable, TokenHelper, QuadraticFundingHelper {
     using SafeERC20 for IERC20;
 
-    address public constant USDC = 0xde637d4C445cA2aae8F782FFAc8d2971b93A4998; // Fake Address
-    address public constant BENEFICIARY_CERTIFICATE = 0xde637d4C445cA2aae8F782FFAc8d2971b93A4998; // Fake Address of Soulbound Token
+    address public immutable USDC; // Fake Address
+    address public immutable BENEFICIARY_CERTIFICATE; // Fake Address of Soulbound Token
     
     // Each Epoch Interval -> Fund raising round to determine the yield distribution from lossless pool, beyond an epoch, the yield accumulated will 
     uint256 public constant MAX_BPS_DENOMINATOR = 10_000;
@@ -34,8 +34,10 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
 
 
 
-    constructor(uint256 _startTime) {
-        START_TIME = _startTime;
+    constructor(address token_, address certificate_) {
+        START_TIME = block.timestamp;
+        USDC = token_; // alxUSDC
+        BENEFICIARY_CERTIFICATE = certificate_;
     }
 
  /*
@@ -43,7 +45,12 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
                         PUBLIC/EXTERNAL FUNCTIONS
 =========================================================================
 */
-    // @notice Allows anyone who wanted to donate funds, but are not willing to decide which specific beneficiary to donate to, to get active donors to decide on distribution via quadratic funding mechanism.
+    // @notice [CROSS-CHAIN] Allows anyone who wanted to donate funds, but are not willing to decide which specific beneficiary to donate to, to get active donors to decide on distribution via quadratic funding mechanism.
+    function depositForEpochDistribution(address donor, uint256 amount) external {
+        _donateForEpochDistribution(donor, amount);
+    }
+
+      // @notice Allows anyone who wanted to donate funds, but are not willing to decide which specific beneficiary to donate to, to get active donors to decide on distribution via quadratic funding mechanism.
     function depositForEpochDistribution(uint256 amount) external {
         _donateForEpochDistribution(msg.sender, amount);
     }
@@ -53,6 +60,7 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
         _donateBeneficiary(msg.sender, beneficiaryIndex, amount);
     }
 
+     /// @notice [CROSS-CHAIN] Allows anyone to donate to beneficiary of choice based on `beneficiaryIndex` with a specified amount of supported token.
     function donateBeneficiary(address donor, uint256 beneficiaryIndex, uint256 amount) external {
         require(donor != address(0), "Null address");
         _donateBeneficiary(donor, beneficiaryIndex, amount);
@@ -75,6 +83,16 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
     function addStrategy(address strategy) external override onlyOwner {
         _losslessYieldStrategies.push(strategy);
     } 
+
+    function removeStrategy(address strategy) external override onlyOwner {
+        uint256 strategyIndex = _getStrategyIndexByAddress(strategy);
+        uint256 length = _losslessYieldStrategies.length;
+
+        if(strategyIndex != length - 1) {
+             _losslessYieldStrategies[strategyIndex] = _losslessYieldStrategies[length - 1];
+        }
+        _losslessYieldStrategies.pop();
+    }
 
  /*
 =========================================================================

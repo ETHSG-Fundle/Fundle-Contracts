@@ -8,15 +8,11 @@ abstract contract LosslessStrategyManager {
     /// Add lossless strategies for additional funding via yield generation from external lossless capital.
     function addStrategy(address strategy) external virtual;
 
+    function removeStrategy(address strategy) external virtual;
+
     /// @notice Retrieves strategy index via address of strategy. Reverts if it does not exists.
     function getStrategyIndex(address strategy) external view returns(uint256 strategyIndex) {
-        for(uint256 i = 0; i < _losslessYieldStrategies.length; i++) {
-            if(strategy == _losslessYieldStrategies[i]) {
-                strategyIndex = i;
-                return strategyIndex;
-            }
-        }
-        revert();
+       strategyIndex = _getStrategyIndexByAddress(strategy);
     }
 
      /// @notice Retrieves all strategies in a list of addresses of the strategies implemented.
@@ -27,6 +23,16 @@ abstract contract LosslessStrategyManager {
     /// @notice Retrieves total strategies based on length of strategies list.
     function getStrategiesLength() external view returns(uint256 length) {
         length = _losslessYieldStrategies.length;
+    }
+
+    function _getStrategyIndexByAddress(address strategy) internal view returns(uint256 strategyIndex) {
+         for(uint256 i = 0; i < _losslessYieldStrategies.length; i++) {
+            if(strategy == _losslessYieldStrategies[i]) {
+                strategyIndex = i;
+                return strategyIndex;
+            }
+        }
+        revert();
     }
 }
 
