@@ -93,8 +93,8 @@ const config: HardhatUserConfig = {
           gasPrice: 30 * 1000000000,
           timeout: 200000,
         },
-        "linea-goerli": {
-          url: 'https://goerli.base.org',
+        linea_testnet: {
+          url: 'https://rpc.goerli.linea.build',
           accounts: [`${process.env.PRIVATE_KEY_727 || dummyPrivateKey}`],
           timeout: 200000,
         },
@@ -152,6 +152,7 @@ const config: HardhatUserConfig = {
           rinkeby: process.env.ETHERSCAN_API_KEY || "",
           goerli: process.env.ETHERSCAN_API_KEY || "",
           "base-goerli": "PLACEHOLDER_STRING",
+          linea_testnet: process.env.LINEASCAN_API_KEY || "",
           "mantle-testnet": "PLACEHOLDER_STRING",
           sepolia: process.env.ETHERSCAN_API_KEY || "",
           bsc: process.env.BSCSCAN_API_KEY || "",
@@ -165,6 +166,14 @@ const config: HardhatUserConfig = {
             urls: {
              apiURL: "https://api-goerli.basescan.org/api",
              browserURL: "https://goerli.basescan.org"
+            }
+          },
+          {
+            network: "linea_testnet",
+            chainId: 59140,
+            urls: {
+              apiURL: "https://api-testnet.lineascan.build/api",
+              browserURL: "https://goerli.lineascan.build/address"
             }
           }
         ]

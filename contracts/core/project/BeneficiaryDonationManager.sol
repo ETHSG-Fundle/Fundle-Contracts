@@ -47,23 +47,23 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
 */
     // @notice [CROSS-CHAIN] Allows anyone who wanted to donate funds, but are not willing to decide which specific beneficiary to donate to, to get active donors to decide on distribution via quadratic funding mechanism.
     function depositForEpochDistribution(address donor, uint256 amount) external {
-        _donateForEpochDistribution(donor, amount);
+        _donateForEpochDistribution(donor, msg.sender, amount);
     }
 
       // @notice Allows anyone who wanted to donate funds, but are not willing to decide which specific beneficiary to donate to, to get active donors to decide on distribution via quadratic funding mechanism.
     function depositForEpochDistribution(uint256 amount) external {
-        _donateForEpochDistribution(msg.sender, amount);
+        _donateForEpochDistribution(msg.sender, msg.sender, amount);
     }
 
      /// @notice Allows anyone to donate to beneficiary of choice based on `beneficiaryIndex` with a specified amount of supported token.
     function donateBeneficiary(uint256 beneficiaryIndex, uint256 amount) external {
-        _donateBeneficiary(msg.sender, beneficiaryIndex, amount);
+        _donateBeneficiary(msg.sender, msg.sender, beneficiaryIndex, amount);
     }
 
      /// @notice [CROSS-CHAIN] Allows anyone to donate to beneficiary of choice based on `beneficiaryIndex` with a specified amount of supported token.
     function donateBeneficiary(address donor, uint256 beneficiaryIndex, uint256 amount) external {
         require(donor != address(0), "Null address");
-        _donateBeneficiary(donor, beneficiaryIndex, amount);
+        _donateBeneficiary(donor, msg.sender, beneficiaryIndex, amount);
     }
 
     /// @dev See-{QuadraticFundingHelper-clrMatching}
@@ -122,7 +122,7 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
 
     /// @notice Returns all addresses of whitelisted benefiaries eligible to receive donations.
     function getAllBeneficiaries() external view returns (address[] memory beneficiaries) {
-        uint256 length = IBeneficiaryCerfiticate(BENEFICIARY_CERTIFICATE).totalSupply();
+        uint256 length = IBeneficiaryCertificate(BENEFICIARY_CERTIFICATE).totalSupply();
         beneficiaries = new address[](length);
         for(uint256 i = 0; i < length; i++) {
             beneficiaries[i] = _getBeneficiaryAddress(i);
@@ -151,7 +151,7 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
 =========================================================================
 */
 
-    function _donateBeneficiary(address donor, uint256 beneficiaryIndex, uint256 amount) internal {
+    function _donateBeneficiary(address donor, address sender, uint256 beneficiaryIndex, uint256 amount) internal {
          require(amount > 0, "Invalid amount");
 
         uint256 epochIndex =  _calcEpochIndex(block.timestamp);
@@ -159,17 +159,17 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
         require(beneficiary != address(0), "Beneficiary does not exist");
 
         _epochBeneficiaryDonations[epochIndex][beneficiaryIndex] += amount;
-        IERC20(USDC).safeTransferFrom(donor, beneficiary, amount); // Need Approval from donor to allow contract to spendon their behalf
+        IERC20(USDC).safeTransferFrom(sender, beneficiary, amount); // Need Approval from donor to allow contract to spendon their behalf
 
         emit Donation(epochIndex, donor, beneficiaryIndex, amount);
     }
 
     /// @notice For direct donations but to be distrubuted via quadratic funding mechanism based on active donation distribution to supported NPOs.
-    function _donateForEpochDistribution(address donor, uint256 amount) internal {
+    function _donateForEpochDistribution(address donor,address sender, uint256 amount) internal {
         require(amount > 0, "Invalid amount");
 
         uint256 epochIndex =  _calcEpochIndex(block.timestamp);
-        IERC20(USDC).safeTransferFrom(donor, address(this), amount);
+        IERC20(USDC).safeTransferFrom(sender, address(this), amount);
 
         emit DepositForEpochDistributedDonation(epochIndex, donor, amount);
     }
@@ -187,20 +187,28 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
     }
 
     /// @notice Calculates the resp ective basis points for each whitelisted benefiaciary based on the distribution of main donations received via the quadratic funding formula
-    function _getEpochDonationDistribution(uint256 epochIndex) internal view returns(address[] memory beneficiaries, uint256[] memory basisPoints) {
-        uint256 totalBeneficiaries = IBeneficiaryCerfiticate(BENEFICIARY_CERTIFICATE).totalSupply();
-        uint256 totalQuadSum;
-        for (uint256 i; i < totalBeneficiaries; i++) { 
-                uint256 quadSum = sqrt(_epochBeneficiaryDonations[epochIndex][i]);
-                totalQuadSum += quadSum;
-        }
-
-        for (uint256 i; i < totalBeneficiaries; i++) {
-            uint256 quadSum = sqrt(_epochBeneficiaryDonations[epochIndex][i]);
-            beneficiaries[i] = (_getBeneficiaryAddress(i));
-            basisPoints[i] = (_calcBeneficiaryDonationBps(quadSum, totalQuadSum));
-        }
+  function _getEpochDonationDistribution(
+    uint256 epochIndex
+  ) internal view returns (address[] memory beneficiaries, uint256[] memory basisPoints) {
+    uint256 totalBeneficiaries = IBeneficiaryCertificate(BENEFICIARY_CERTIFICATE).totalSupply();
+    uint256 totalQuadSum;
+    for (uint256 i = 0; i < totalBeneficiaries; i++) {
+      uint256 quadSum = sqrt(_epochBeneficiaryDonations[epochIndex][i]);
+      totalQuadSum += quadSum;
     }
+
+    address[] memory internal_beneficiaries = new address[](totalBeneficiaries);
+    uint256[] memory internal_basisPoints = new uint256[](totalBeneficiaries);
+
+    for (uint256 i = 0; i < totalBeneficiaries; i++) {
+      uint256 quadSum = sqrt(_epochBeneficiaryDonations[epochIndex][i]);
+      internal_beneficiaries[i] = (_getBeneficiaryAddress(i));
+      internal_basisPoints[i] = (_calcBeneficiaryDonationBps(quadSum, totalQuadSum));
+    }
+
+    beneficiaries = internal_beneficiaries;
+    basisPoints = internal_basisPoints;
+  }
 
    /// @notice Retrieves the address of the benefiary tagged to the `beneficiaryIndex`.
     function _getBeneficiaryAddress(uint256 beneficiaryIndex) internal view returns (address beneficiary) {
@@ -210,14 +218,11 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
 
     /// @notice Calculates the current total accumulated amount of donations for a specified `epochIndex` and `beneficiaryIndex`.
     function _calcTotalEpochDonation(uint256 epochIndex) internal view returns(uint256 total) {
-          IBeneficiaryCerfiticate BeneficiaryCertificate = IBeneficiaryCerfiticate(BENEFICIARY_CERTIFICATE);
+          IBeneficiaryCertificate BeneficiaryCertificate = IBeneficiaryCertificate(BENEFICIARY_CERTIFICATE);
         uint256 totalSupply = BeneficiaryCertificate.totalSupply();
 
         for(uint256 i; i < totalSupply;){
-            // Check for deprecated beneficiary AA
-            if(BeneficiaryCertificate.ownerOf(i) != address(0)) {
-                total += _epochBeneficiaryDonations[epochIndex][i];
-            }
+            total += _epochBeneficiaryDonations[epochIndex][i];
             unchecked {
                 i++;
             }

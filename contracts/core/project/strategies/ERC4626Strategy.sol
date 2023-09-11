@@ -22,7 +22,6 @@ contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
     address public immutable UNDERLYING_TOKEN;
     address public immutable YIELD_TOKEN;
 
-    mapping(address => uint256) internal _userUnderlyingStake; 
     mapping(uint256 => uint256) internal _epochAccruedYield;
 
     modifier validateEpochEnded(uint256 epochIndex) {
@@ -35,13 +34,13 @@ contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
         BENEFICIARY_DONATION_MANAGER = manager_;
         UNDERLYING_TOKEN = IERC4626(erc4626_).asset();
         YIELD_TOKEN = erc4626_;
-        IERC20(UNDERLYING_TOKEN).safeApprove(erc4626_, 0);
-        IERC20(UNDERLYING_TOKEN).safeApprove(address(this), type(uint256).max);
+        IERC20(UNDERLYING_TOKEN).safeApprove(erc4626_, type(uint256).max);
     }
 
     function deposit(address token, uint256 underlyingAmount) external returns (uint256 shares) {
         require(token == UNDERLYING_TOKEN, "Not underlying token");
-        // Check balance of user?
+
+        IERC20(UNDERLYING_TOKEN).safeTransferFrom(msg.sender,address(this), underlyingAmount);
         shares = IERC4626(YIELD_TOKEN).deposit(underlyingAmount, address(this));
         _mint(msg.sender, underlyingAmount);
         uint256 epochIndex = _getEpochByTimestamp(block.timestamp);
@@ -52,8 +51,6 @@ contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
     function withdraw(address token, uint256 underlyingAmount) external returns (uint256 underlyingAmountOut) {
         require(token == UNDERLYING_TOKEN, "Invalid token");
 
-        uint256 userStake = _userUnderlyingStake[msg.sender];
-        require(userStake >= underlyingAmount, "Withdrawal amount exceeds stake");
         require(balanceOf(msg.sender) >= underlyingAmount, "Amount requested exceeds deposit amount");
         IERC4626 yieldToken = IERC4626(YIELD_TOKEN);
 
@@ -67,10 +64,7 @@ contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
 
 
     function exchangeRate() public view returns(uint256 rate) {
-        uint256 totalAssets = IERC4626(YIELD_TOKEN).totalAssets();
-        uint256 totalSupply = IERC4626(YIELD_TOKEN).totalSupply();
-        
-        rate = totalAssets.divDown(totalSupply);
+        rate = IERC4626(YIELD_TOKEN).convertToAssets(1e18);
     }
 
 

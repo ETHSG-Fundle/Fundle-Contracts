@@ -18,7 +18,19 @@ import {BaseERC6551Account, ContractAccountFactory, ERC6551Registry, ExampleERC7
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
 
-  await deploy<BeneficiaryCertificate>(deployer,"BeneficiaryCertificate", [], true);
+  const beneficiaryCertificate = await deploy<BeneficiaryCertificate>(deployer,"BeneficiaryCertificate", [], true);
+  const tx1 = await beneficiaryCertificate.awardBeneficiaryCertificate("0x29A768F1688722EcbCCa3c11C1dE41FF314265bD");
+  tx1.wait();
+
+  const tx2 = await beneficiaryCertificate.awardBeneficiaryCertificate("0x55bA68ccf705B07c4F067E1a02780484315Ed76e");
+  tx2.wait();
+
+  const tx3 = await beneficiaryCertificate.awardBeneficiaryCertificate("0x9F4ffbFBC6721D88b45422A4371eE34bbe62caEB")
+  tx3.wait();
+
+  console.log("Done assigning all 3 addresses!");
+
+  
 }
 
 main()

@@ -19,7 +19,7 @@ contract BeneficiaryAccountFactory {
     address public immutable BENEFICIARY_CERTIFICATE;
 
     modifier _validateCertifiedBeneficiary(address account) {
-        uint256 balance = IBeneficiaryCerfiticate(BENEFICIARY_CERTIFICATE).balanceOf(account);
+        uint256 balance = IBeneficiaryCertificate(BENEFICIARY_CERTIFICATE).balanceOf(account);
         require(balance == 1, "No beneficiary cetificate");
         _;
     }
@@ -67,7 +67,7 @@ contract BeneficiaryAccountFactory {
 
 
     function getBeneficiaryCetificate(address account) public view returns (uint256) {
-        uint256 tokenId = IBeneficiaryCerfiticate(BENEFICIARY_CERTIFICATE).tokenOfOwnerByIndex(account, 0); // 0th Index
+        uint256 tokenId = IBeneficiaryCertificate(BENEFICIARY_CERTIFICATE).tokenOfOwnerByIndex(account, 0); // 0th Index
         return tokenId;
     }
 }

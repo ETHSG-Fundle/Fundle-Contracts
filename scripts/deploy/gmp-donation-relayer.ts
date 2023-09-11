@@ -1,7 +1,7 @@
-import hre, {ethers} from 'hardhat';
+import hre from 'hardhat';
 
 // Deployment Helpers:
-import {getContractAt, deploy } from '../utils/helpers';
+import { deploy } from '../utils/helpers';
 // ABI
 import { GmpDonationRelayer } from '../../typechain-types';
 

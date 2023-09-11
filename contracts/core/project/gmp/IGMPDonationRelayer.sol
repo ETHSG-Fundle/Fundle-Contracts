@@ -5,6 +5,6 @@ import { IGMPDonationBase } from "./IGMPDonationBase.sol";
 
 
 interface IGMPDonationRelayer is IGMPDonationBase {
-    function executeMainDonation(uint256 beneficiaryIndex, uint256 amount, uint256 donationType) external payable;
+    function executeMainDonation(string calldata destChain, string calldata destAddress,uint256 beneficiaryIndex, uint256 amount, uint256 donationType) external payable;
 
 }

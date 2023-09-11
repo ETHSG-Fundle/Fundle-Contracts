@@ -10,8 +10,6 @@ import { IGMPDonationRelayer } from "./IGMPDonationRelayer.sol";
 contract GmpDonationRelayer is IGMPDonationRelayer, AxelarExecutable {
     IAxelarGasService internal immutable gasService;
     IERC20Metadata internal immutable supportedToken; // Must be axlUSDC
-    string public constant GMP_DONATION_RECEIVER = "0x41C3ABb7F7cfA570B75D0FEA2C5F2EAe6e5F1C40"; // Replace to Receiver address
-    string public constant RECEIVING_CHAIN = "ethereum-2"; 
     uint256 public lastBeneficiaryIndex;
 
     constructor(address gateway_, address gasReceiver_, address token_) AxelarExecutable(gateway_) {
@@ -20,7 +18,7 @@ contract GmpDonationRelayer is IGMPDonationRelayer, AxelarExecutable {
     }
 
     // If `donationType` == 2, `beneficiaryIndex` can be set to 0 as a placeholder.
-    function executeMainDonation(uint256 beneficiaryIndex, uint256 amount, uint256 donationType) external payable  {
+    function executeMainDonation(string calldata destChain, string calldata destAddress, uint256 beneficiaryIndex, uint256 amount, uint256 donationType) external payable  {
         require(msg.value > 0, 'Gas payment is required');
 
         supportedToken.transferFrom(msg.sender, address(this), amount);
@@ -30,18 +28,17 @@ contract GmpDonationRelayer is IGMPDonationRelayer, AxelarExecutable {
         uint256 srcChainId = block.chainid;
         bytes memory payload = abi.encode(msg.sender, srcChainId, donationType, beneficiaryIndex); // DonationType: 1 or 2
 
-        // Need to approve spending for ERC20 first? KIV
         gasService.payNativeGasForContractCallWithToken{value: msg.value} (
             address(this),
-            RECEIVING_CHAIN,
-            GMP_DONATION_RECEIVER,
+            destChain,
+            destAddress,
             payload,
             symbol,
             amount,
             msg.sender
         );
 
-        gateway.callContractWithToken(RECEIVING_CHAIN, GMP_DONATION_RECEIVER, payload, symbol, amount);
+        gateway.callContractWithToken(destChain, destAddress, payload, symbol, amount);
     }
 
     function getAxelarGasService() external view returns(address service) {

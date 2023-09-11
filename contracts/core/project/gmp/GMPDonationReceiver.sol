@@ -14,7 +14,7 @@ import { IGMPDonationBase } from "./IGMPDonationBase.sol";
 contract GMPDonationReceiver is IGMPDonationBase, AxelarExecutable, TokenHelper {
     IAxelarGasService internal immutable gasService;
     IERC20Metadata internal immutable supportedToken;
-    address public constant DONANTION_MANAGER = 0x27235EE90ff5379D228f7692aFDBEba358Ded8EA;
+    address public constant DONANTION_MANAGER = 0x32f972DFbFAD84c986Db30681f1177e221ef72dd;
     uint256 public lastBeneficiaryIndex;
 
 
