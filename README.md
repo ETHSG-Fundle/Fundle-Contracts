@@ -1,4 +1,13 @@
 # Fundle Contracts
+
+## Table of Contents
+- [Introduction](#introduction)
+- [How It Works](#how-it-works)
+- [Technologies Used](#technologies-used)
+- [Deployed Contract Addresses](#deployed-contract-addresses)
+- [Pendle Integration README](#pendle-integration-readme)
+- [Axelar Bounty README](#axelar-bounty-readme)
+
 ## Introduction
 Fundle is an **Interchain Quadratic Funding Platform** that is powered by a Lossless Pool generated from DeFi fixed yields. Beyond the traditional direct transfers, donors have the option give without losing anything by simply depositing funds to the protocol for an amount of time. They will get back 100% of their funds risk-free, meanwhile NPOs get to keep the yields (distributed quadratically) to support their causes.
 
@@ -27,6 +36,10 @@ The direct donation breakdown will then be calculated with the quadratic funding
 Any excess or unclaimed yield right after the `EPOCH` for direct deposits to the quadratic pool & yield accrued from the lossless donation will belong to the most recently ended `EPOCH`.
 
 
+## Technologies Used
+- Pendle Core v2
+- Axelar Network
+- OpenZeppelin Open-Sourced Contracts
 
 
 ## Deployed Contract Addresses
@@ -60,7 +73,7 @@ Any excess or unclaimed yield right after the `EPOCH` for direct deposits to the
 `AXLUSDC ERC20 Token`: 0x254d06f33bDc5b8ee05b2ea472107E300226659A
 
 
-## Pendle Integration
+## Pendle Integration README
 
 Given that Pendle contracts do not exists on any testnets and it would be unfeasible to fork the entire protocol for demostration purposes. Here are 2 drafted contracts that utilises Pendle Technology to improve capital efficient and provide a variation of lossless strategy.
 
