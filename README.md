@@ -2,9 +2,9 @@
 ## Introduction
 Fundle is an **Interchain Quadratic Funding Platform** that is powered by a Lossless Pool generated from DeFi fixed yields. Beyond the traditional direct transfers, donors have the option give without losing anything by simply depositing funds to the protocol for an amount of time. They will get back 100% of their funds risk-free, meanwhile NPOs get to keep the yields (distributed quadratically) to support their causes.
 
-
-
 ## How It Works
+
+![FundleChart](https://github.com/ETHSG-Fundle/Fundle-Contracts/assets/106247981/3ef1d493-bd85-4eb8-90df-12ce6c5dacab)
 
 - `Beneficiary Certificate` is a soul-bound token contract issued by Fundle through governance to accredify and whitelist beneficiaries with their assigned wallets to receive funding/donations from our donations & quadratic funding pools.
 
