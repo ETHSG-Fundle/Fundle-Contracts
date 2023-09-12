@@ -174,7 +174,7 @@ contract BeneficiaryDonationManager is IBeneficiaryDonationManager, LosslessStra
         emit DepositForEpochDistributedDonation(epochIndex, donor, amount);
     }
 
-    function _distributeMainDepositsByEpoch(uint256 epochIndex, address[] memory beneficiaries, uint256[] memory basisPoints) internal {
+    function _distributeMainDepositsByEpoch(uint256 epochIndex, address[] memory beneficiaries, uint256[] memory basisPoints) internal virtual {
         uint256 epoch = _calcEpochIndex(block.timestamp);
         require(epochIndex > epoch, "Epoch has not ended");
 

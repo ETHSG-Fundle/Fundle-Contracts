@@ -23,6 +23,7 @@ contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
     address public immutable YIELD_TOKEN;
 
     mapping(uint256 => uint256) internal _epochAccruedYield;
+    mapping(address => uint256) internal _userShares;
 
     modifier validateEpochEnded(uint256 epochIndex) {
         uint256 epoch = IBeneficiaryDonationManager(BENEFICIARY_DONATION_MANAGER).getCurrentEpochIndex();
@@ -42,6 +43,7 @@ contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
 
         IERC20(UNDERLYING_TOKEN).safeTransferFrom(msg.sender,address(this), underlyingAmount);
         shares = IERC4626(YIELD_TOKEN).deposit(underlyingAmount, address(this));
+        _userShares[msg.sender] += shares;
         _mint(msg.sender, underlyingAmount);
         uint256 epochIndex = _getEpochByTimestamp(block.timestamp);
 
@@ -56,15 +58,28 @@ contract ERC4626Strategy is ILosslessStrategy, ERC20, BoringOwnable {
 
         _burn(msg.sender, underlyingAmount);
         uint256 sharesToRedeem = yieldToken.convertToShares(underlyingAmount);
+        _userShares[msg.sender] -= sharesToRedeem;
         underlyingAmountOut = yieldToken.redeem(sharesToRedeem, msg.sender, address(this));
         uint256 epochIndex = _getEpochByTimestamp(block.timestamp);
 
         emit Withdraw(epochIndex, msg.sender, UNDERLYING_TOKEN, underlyingAmount);
     }
 
+    function _transfer(address sender, address recipient, uint256 amount) internal override {
+        super._transfer(sender, recipient, amount);
+        uint256 sharesAmount = IERC4626(YIELD_TOKEN).convertToShares(amount);
+        _userShares[sender] -= sharesAmount;
+        _userShares[recipient] += sharesAmount;
+    }
+
 
     function exchangeRate() public view returns(uint256 rate) {
         rate = IERC4626(YIELD_TOKEN).convertToAssets(1e18);
+    }
+
+    function getCurrentSharesAndUnderlyingStake(address user) external view returns (uint256 shares, uint256 underlying) {
+        shares = _userShares[user];
+        underlying = IERC4626(YIELD_TOKEN).convertToAssets(shares);
     }
 
 

@@ -1306,6 +1306,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@openzeppelin/contracts@npm:4.7.3":
+  version: 4.7.3
+  resolution: "@openzeppelin/contracts@npm:4.7.3"
+  checksum: 18382fcacf7cfd652f5dd0e70c08f08ea74eaa8ff11e9f9850639ada70198ae01a3f9493d89a52d724f2db394e9616bf6258017804612ba273167cf657fbb073
+  languageName: node
+  linkType: hard
+
 "@openzeppelin/contracts@npm:4.9.3":
   version: 4.9.3
   resolution: "@openzeppelin/contracts@npm:4.9.3"
@@ -1385,6 +1392,17 @@ __metadata:
   bin:
     openzeppelin-upgrades-core: dist/cli/cli.js
   checksum: fd6a6624adbd81cce42afa6da9bd670bcf718fa42e72d8bae2195e6784dc31f75b1915bf2c5d1689c65587ef6f19c3d4e2f81222ca289718bc107647648d69c7
+  languageName: node
+  linkType: hard
+
+"@pendle/core-v2@npm:^2.27.0":
+  version: 2.27.0
+  resolution: "@pendle/core-v2@npm:2.27.0"
+  dependencies:
+    "@chainlink/contracts": ^0.6.1
+    "@openzeppelin/contracts": 4.7.3
+    "@openzeppelin/contracts-upgradeable": 4.7.3
+  checksum: 2e7f05fb6242cea816582a9fae9c0bbc3a47364bbd03141e7e107ab6505844bf3769136bb24ebb3922af60fea39e8f4870fbe8168490f41d1955db4405e0be69
   languageName: node
   linkType: hard
 
@@ -3920,6 +3938,7 @@ __metadata:
     "@openzeppelin/contracts": 4.9.3
     "@openzeppelin/contracts-upgradeable": 4.7.3
     "@openzeppelin/hardhat-upgrades": ^1.19.0
+    "@pendle/core-v2": ^2.27.0
     "@typechain/ethers-v5": ^9.0.0
     "@typechain/hardhat": ^4.0.0
     "@types/chai": ^4.2.21
